@@ -1,16 +1,27 @@
 import numpy as np
 from numba import njit, cuda
 import timeit
+mat_size = 1000
 
 
 def matmul_transpose_trivial(X):
-    raise NotImplementedError("To be implemented")
-
+    A = np.zeros(array_width, array_height)
+    for i in range (mat_size): 
+        for j in range (mat_size):
+            for k in range (mat_size):
+                A[i,j] += X[i,k] * X[j,k]
+    return A
 
 @njit
 def matmul_transpose_numba(X):
-    raise NotImplementedError("To be implemented")
-
+    A = np.zeros(array_width, array_height)
+    for i in range (mat_size): 
+        for j in range (mat_size):
+            for k in range (mat_size):
+                A[i,j] += X[i,k] * X[j,k]
+    return A
+            
+            
 
 def matmul_transpose_gpu(X):
     raise NotImplementedError("To be implemented")
