@@ -13,7 +13,8 @@ def sigmoid(x):
          sigmoid of the input x
 
      """
-    return 1 / (1 + e ** (-x))
+    return 1 / (1 + np.e ** (-x))
+
 
 def sigmoid_prime(x):
     """
@@ -27,11 +28,13 @@ def sigmoid_prime(x):
              derivative of sigmoid of the input x
 
     """
-    return e ** (-x) / (((1 + e ** (-x)))**2)
+    return np.e ** (-x) / ((1 + np.e ** (-x)) ** 2)
 
 
 def random_weights(sizes):
     """
+
+
          Parameters
          ----------
          sizes : list of sizes
@@ -42,10 +45,8 @@ def random_weights(sizes):
              list of xavier initialized np arrays weight matrices
 
     """
-    arrays = []
-    for i in range(len(sizes)-1):
-        arrays.append();
-    return 
+    return [xavier_initialization(sizes[i], sizes[i+1]) for i in range(len(sizes)-1)]
+
 
 def zeros_weights(sizes):
     """
@@ -59,14 +60,15 @@ def zeros_weights(sizes):
              list of zero np arrays weight matrices
 
     """
-    raise NotImplementedError("To be implemented")
+    return[np.zeros((sizes[i], sizes[i+1])) for i in range(len(sizes) - 1)]
 
 
-def zeros_biases(list):
+
+def zeros_biases(sizes):
     """
          Parameters
          ----------
-         sizes : list of sizes
+         sizes: list of sizes
 
          Returns
          -------
@@ -74,7 +76,8 @@ def zeros_biases(list):
              list of zero np arrays bias matrices
 
     """
-    raise NotImplementedError("To be implemented")
+
+    return [np.zeros((1, sizes[i])) for i in range(len(sizes))]
 
 
 def create_batches(data, labels, batch_size):
@@ -91,7 +94,9 @@ def create_batches(data, labels, batch_size):
              list of tuples of (data batch of batch_size, labels batch of batch_size)
 
     """
-    raise NotImplementedError("To be implemented")
+    return [(data[i*batch_size:(i+1)*batch_size], labels[i*batch_size, (i+1)*batch_size]) \
+                for i in range(len(data)//batch_size)]\
+            + [(data[-(len(data) % batch_size):-1], labels[-(len(data) % batch_size):-1])]
 
 
 def add_elementwise(list1, list2):
@@ -106,8 +111,13 @@ def add_elementwise(list1, list2):
          list
              list of sum of each two elements by index
     """
-    raise NotImplementedError("To be implemented")
+    return list1 + list2
+
 
 def xavier_initialization(m, n):
     xavier = 1 / (m ** 0.5)
     return np.random.uniform(low=-xavier, high=xavier, size=(m, n))
+
+
+if __name__ == '__main__':
+    print(add_elementwise(np.array([1, 2, 3]), np.array([3, 2, 1])))
