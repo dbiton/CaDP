@@ -31,8 +31,8 @@ def dist_numba(A, B, p):
          p-dist between A and B
      """
     d = 0
-    for x in range(array_width):
-        for y in range(array_height):
+    for x in prange(array_width):
+        for y in prange(array_height):
             d += abs(A[x, y] - B[x, y]) ** p
     return d ** (1 / p)
 
