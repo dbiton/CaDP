@@ -30,7 +30,11 @@ def dist_numba(A, B, p):
      np.array
          p-dist between A and B
      """
-    pass
+    d = 0
+    for x in range(array_width):
+        for y in range(array_height):
+            d += abs(A[x, y] - B[x, y]) ** p
+    return d ** (1 / p)
 
 
 def dist_gpu(A, B, p):
@@ -54,7 +58,7 @@ def dist_kernel(A, B, p, C):
     d_cell = abs(A[tx, ty] - B[tx, ty]) ** p
     cuda.atomic.add(C, 0, d_cell)
     cuda.syncthreads()
-    if (tx == 0 and ty == 0):
+    if tx == 0 and ty == 0:
         C[0] **= (1 / p)
 
 

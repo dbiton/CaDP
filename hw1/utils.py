@@ -45,7 +45,7 @@ def random_weights(sizes):
              list of xavier initialized np arrays weight matrices
 
     """
-    return [xavier_initialization(sizes[i], sizes[i+1]) for i in range(len(sizes)-1)]
+    return [xavier_initialization(sizes[i], sizes[i + 1]) for i in range(len(sizes) - 1)]
 
 
 def zeros_weights(sizes):
@@ -60,8 +60,7 @@ def zeros_weights(sizes):
              list of zero np arrays weight matrices
 
     """
-    return[np.zeros((sizes[i], sizes[i+1])) for i in range(len(sizes) - 1)]
-
+    return [np.zeros((sizes[i], sizes[i + 1])) for i in range(len(sizes) - 1)]
 
 
 def zeros_biases(sizes):
@@ -94,9 +93,7 @@ def create_batches(data, labels, batch_size):
              list of tuples of (data batch of batch_size, labels batch of batch_size)
 
     """
-    return [(data[i*batch_size:(i+1)*batch_size], labels[i*batch_size, (i+1)*batch_size]) \
-                for i in range(len(data)//batch_size)]\
-            + [(data[-(len(data) % batch_size):-1], labels[-(len(data) % batch_size):-1])]
+    return [(data[ndx:min(ndx + batch_size, len(data))], labels[ndx:min(ndx + batch_size, len(data))]) for ndx in range(0, len(data), batch_size)]
 
 
 def add_elementwise(list1, list2):
@@ -120,4 +117,22 @@ def xavier_initialization(m, n):
 
 
 if __name__ == '__main__':
-    print(add_elementwise(np.array([1, 2, 3]), np.array([3, 2, 1])))
+    array = np.array([1, 2, 3, 4, 5, 6])
+    array2 = np.array([11, 12, 13, 14, 15, 16])
+    data = np.array([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]])
+    labels = np.array([1, 2, 3])
+
+    print("########### sigmoid         ##############")
+    print(sigmoid(array))
+    print("########### sigmoid prime   ##############")
+    print(sigmoid_prime(array))
+    print("########### random_weights  ##############")
+    print(random_weights(array))
+    print("########### zeros_weights   ##############")
+    print(zeros_weights(array))
+    print("########### zeros_biases    ##############")
+    print(zeros_biases(array))
+    print("########### create_batches  ##############")
+    print(create_batches(data, labels, 2))
+    print("########### add_elementwise ##############")
+    print(add_elementwise(array, array2))

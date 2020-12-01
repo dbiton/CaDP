@@ -120,7 +120,6 @@ class NeuralNetwork(object):
             self.zs[i] = self.matmul(self.activations[i - 1], self.weights[i]) + self.biases[i]
             self.activations[i] = sigmoid(self.zs[i])
 
-
     def back_prop(self, y):
         nabla_b = zeros_biases(self.sizes)
         nabla_w = [np.array([0])] + zeros_weights(self.sizes)

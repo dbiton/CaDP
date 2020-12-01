@@ -3,7 +3,10 @@ from numba import njit, cuda
 import timeit
 
 mat_size = 1000
-
+num_blocks = 1000
+threads_per_block = 1000
+array_width = 1000
+array_height = 1000
 
 def matmul_transpose_trivial(X):
     A = np.zeros(array_width, array_height)
