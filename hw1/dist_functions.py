@@ -19,7 +19,9 @@ def dist_cpu(A, B, p):
     for x in range(array_width):
         for y in range(array_height):
             d += abs(A[x, y] - B[x, y]) ** p
-    return d ** (1 / p)
+    out = d ** (1 / p)
+    print(out)
+    return out
 
 
 @njit(parallel=True)
@@ -34,7 +36,9 @@ def dist_numba(A, B, p):
     for x in prange(array_width):
         for y in prange(array_height):
             d += abs(A[x, y] - B[x, y]) ** p
-    return d ** (1 / p)
+    out = d ** (1 / p)
+    print(out)
+    return out
 
 
 def dist_gpu(A, B, p):
@@ -48,6 +52,7 @@ def dist_gpu(A, B, p):
     d_B = cuda.to_device(B)
     d = np.zeros(1, dtype=np.float64)
     dist_kernel[num_blocks, threads_per_block](d_A, d_B, p, d)
+    print(d[0])
     return d[0]
 
 
@@ -56,8 +61,9 @@ def dist_kernel(A, B, p, C):
     tx = cuda.threadIdx.x
     ty = cuda.blockIdx.x
     d_cell = abs(A[tx, ty] - B[tx, ty]) ** p
-    cuda.atomic.add(C, 0, d_cell)
+    cuda.atomic.add(C, d_cell)
     cuda.syncthreads()
+
     if tx == 0 and ty == 0:
         C[0] **= (1 / p)
 

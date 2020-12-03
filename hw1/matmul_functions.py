@@ -8,8 +8,9 @@ threads_per_block = 1000
 array_width = 1000
 array_height = 1000
 
+
 def matmul_transpose_trivial(X):
-    A = np.zeros(array_width, array_height)
+    A = np.array([0 * array_height] * array_width)
     for i in range(mat_size):
         for j in range(mat_size):
             for k in range(mat_size):
@@ -19,12 +20,8 @@ def matmul_transpose_trivial(X):
 
 @njit
 def matmul_transpose_numba(X):
-    A = np.zeros(array_width, array_height)
-    for i in range(mat_size):
-        for j in range(mat_size):
-            for k in range(mat_size):
-                A[i, j] += X[i, k] * X[j, k]
-    return A
+    f = njit(nopython=True)(matmul_transpose_trivial)
+    return f(X)
 
 
 def matmul_transpose_gpu(X):
