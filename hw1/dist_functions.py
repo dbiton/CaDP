@@ -61,9 +61,8 @@ def dist_kernel(A, B, p, C):
     tx = cuda.threadIdx.x
     ty = cuda.blockIdx.x
     d_cell = abs(A[tx, ty] - B[tx, ty]) ** p
-    cuda.atomic.add(C, d_cell)
+    cuda.atomic.add(C, 0, d_cell)
     cuda.syncthreads()
-
     if tx == 0 and ty == 0:
         C[0] **= (1 / p)
 
