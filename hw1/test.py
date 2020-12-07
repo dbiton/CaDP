@@ -2,7 +2,8 @@ from matmul_functions import matmul_transpose_numba, matmul_transpose_gpu
 import numpy as np
 from numba import njit, cuda
 import random
-
+import os
+os.environ['NUMBA_ENABLE_CUDASIM'] = '1'
 @njit
 def compare(res, result):
     diff = 0
@@ -56,7 +57,8 @@ def Jit_tester(f):
             return -1
         diff = compare(res, result)
         if diff > 0.001:
-            print("need=\n", res, " , \n#################\ngot=\n", result)
+            print("########")
+            print(np.sum(not res == result))
             print("Wrong calculation... But don't worry! You can still be a shepherd for ISIS with your skills!")
             print("There are people in the bible who programed better than you...")
             return -1

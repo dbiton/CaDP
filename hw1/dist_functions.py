@@ -3,6 +3,7 @@ from numba import cuda, njit, prange, float32
 import timeit
 import os
 os.environ['NUMBA_ENABLE_CUDASIM'] = '1'
+
 num_blocks = 1000
 threads_per_block = 1000
 array_width = 1000
@@ -60,11 +61,12 @@ def dist_gpu(A, B, p):
 
 @cuda.jit
 def dist_kernel(A, B, p, C):
+    cuda.syncthreads()
     tx = cuda.threadIdx.x
     ty = cuda.blockIdx.x
     d_cell = abs(A[tx, ty] - B[tx, ty]) ** p
     cuda.atomic.add(C, 0, d_cell)
-    cuda.syncthreads()
+
 
 
 
@@ -75,11 +77,11 @@ def dist_comparison():
     p = [1, 2]
 
     def timer(f, q):
-        return min(timeit.Timer(lambda: f(A, B, q)).repeat(3, 20))
+        return min(timeit.Timer(lambda: f(A, B, q)).repeat(2, 5))
 
     for power in p:
         print('p=' + str(power))
-        # print('     [*] CPU:', timer(dist_cpu, power))
+        print('     [*] CPU:', timer(dist_cpu, power))
         print('     [*] Numba:', timer(dist_numba, power))
         print('     [*] CUDA:', timer(dist_gpu, power))
 
