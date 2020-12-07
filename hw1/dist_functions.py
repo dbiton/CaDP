@@ -78,7 +78,7 @@ def dist_comparison():
 
     for power in p:
         print('p=' + str(power))
-        # print('     [*] CPU:', timer(dist_cpu, power))
+        print('     [*] CPU:', timer(dist_cpu, power))
         print('     [*] Numba:', timer(dist_numba, power))
         print('     [*] CUDA:', timer(dist_gpu, power))
 
