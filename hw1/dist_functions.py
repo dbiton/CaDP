@@ -1,7 +1,8 @@
 import numpy as np
 from numba import cuda, njit, prange, float32
 import timeit
-
+import os
+os.environ['NUMBA_ENABLE_CUDASIM'] = '1'
 num_blocks = 1000
 threads_per_block = 1000
 array_width = 1000
@@ -33,8 +34,8 @@ def dist_numba(A, B, p):
          p-dist between A and B
      """
     d = 0
-    for x in prange(array_width):
-        for y in prange(array_height):
+    for x in range(array_width):
+        for y in range(array_height):
             d += abs(A[x, y] - B[x, y]) ** p
     out = d ** (1 / p)
     print(out)
@@ -50,8 +51,9 @@ def dist_gpu(A, B, p):
      """
     d_A = cuda.to_device(A)
     d_B = cuda.to_device(B)
-    d = np.zeros(1, dtype=np.float64)
+    d = np.array([0], dtype=np.float32)
     dist_kernel[num_blocks, threads_per_block](d_A, d_B, p, d)
+    d[0] **= (1 / p)
     print(d[0])
     return d[0]
 
@@ -63,8 +65,7 @@ def dist_kernel(A, B, p, C):
     d_cell = abs(A[tx, ty] - B[tx, ty]) ** p
     cuda.atomic.add(C, 0, d_cell)
     cuda.syncthreads()
-    if tx == 0 and ty == 0:
-        C[0] **= (1 / p)
+
 
 
 # this is the comparison function - keep it as it is.
@@ -78,7 +79,7 @@ def dist_comparison():
 
     for power in p:
         print('p=' + str(power))
-        print('     [*] CPU:', timer(dist_cpu, power))
+        # print('     [*] CPU:', timer(dist_cpu, power))
         print('     [*] Numba:', timer(dist_numba, power))
         print('     [*] CUDA:', timer(dist_gpu, power))
 
