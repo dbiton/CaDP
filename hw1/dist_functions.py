@@ -20,7 +20,6 @@ def dist_cpu(A, B, p):
         for y in range(array_height):
             d += abs(A[x, y] - B[x, y]) ** p
     out = d ** (1 / p)
-    print(out)
     return out
 
 
@@ -37,7 +36,6 @@ def dist_numba(A, B, p):
         for y in range(array_height):
             d += abs(A[x, y] - B[x, y]) ** p
     out = d ** (1 / p)
-    print(out)
     return out
 
 
@@ -52,8 +50,7 @@ def dist_gpu(A, B, p):
     d_B = cuda.to_device(B)
     d = np.array([0], dtype=np.float64)
     dist_kernel[num_blocks, threads_per_block](d_A, d_B, p, d)
-    d[0] **= (1 / p)
-    print(d[0])
+    out = a[0] ** (1 / p)
     return d[0]
 
 
@@ -63,9 +60,7 @@ def dist_kernel(A, B, p, C):
     ty = cuda.blockIdx.x
     d_cell = abs(A[tx, ty] - B[tx, ty]) ** p
     cuda.atomic.add(C, 0, d_cell)
-    cuda.syncthreads()
-
-
+    
 
 # this is the comparison function - keep it as it is.
 def dist_comparison():
