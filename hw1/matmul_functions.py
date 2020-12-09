@@ -1,9 +1,10 @@
 import numpy as np
 from numba import njit, cuda
 import timeit
-import os
 
 def matmul_transpose_trivial(X):
+
+    # very simple matmul
     mat_size = X.shape[0]
     A = np.zeros((mat_size, mat_size))
     for i in range(mat_size):
@@ -15,6 +16,9 @@ def matmul_transpose_trivial(X):
 
 @njit
 def matmul_transpose_numba(X):
+
+    #same simple, but compile in run time
+    mat_size = X.shape[0]
     A = np.zeros((mat_size, mat_size))
     for i in range(mat_size):
         for j in range(mat_size):
@@ -24,33 +28,46 @@ def matmul_transpose_numba(X):
 
 
 def matmul_transpose_gpu(X):
+
+    # send the kernel the matrix with 1024 threads
     mat_size = X.shape[0]
     num_threads = 1024
     res = np.zeros((mat_size, mat_size))
-    d_res = cuda.to_device(res)
     d_X = cuda.to_device(X)
-    matmul_kernel[1, num_threads](d_X, d_res)
-    res = cuda.to_host(d_res)
+    matmul_kernel[1, num_threads](d_X, res)
     return res
 
 
 @cuda.jit
 def matmul_kernel(A, C):
+
+    # create the out matrix
     mat_size = A.shape[0]
     tid = cuda.threadIdx.x
-    num_threads = cuda.blockDim.x
     num_cells = mat_size ** 2
 
-    # for each cell hat the thread need do do:
+    num_threads = cuda.blockDim.x
+
+    # in 1-d cells view:
+    # the zero thread will do cells: 0, 1023, 2047 ....
+    # the 1 thread  will do the cells: 1, 2014, 2048 ...
+    # ...
+    # the i-th thread will do the cells: i, 1024 + i, 2048 + i ....
+
+    # for each cell that the thread need do do:
     for cell_idx in range(tid, num_cells, num_threads):
+
+        # find the 2-d dimension of the sell
         cell_x = cell_idx // mat_size
         cell_y = cell_idx % mat_size
+
+        # calculate
         cell_value = 0
         for k in range(A.shape[1]):
             cell_value += A[cell_x, k] * A[cell_y, k]
         C[cell_x, cell_y] = cell_value
 
-   
+
 # this is the comparison function - keep it as it is, don't change X or Y.
 def matmul_comparison():
     X = np.random.randn(784, 128)

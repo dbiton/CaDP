@@ -15,6 +15,8 @@ def dist_cpu(A, B, p):
      np.array
          p-dist between A and B
      """
+
+    # simple calculation
     d = 0
     for x in range(array_width):
         for y in range(array_height):
@@ -31,6 +33,8 @@ def dist_numba(A, B, p):
      np.array
          p-dist between A and B
      """
+
+    # simple calculation with compilation
     d = 0
     for x in range(array_width):
         for y in range(array_height):
@@ -46,21 +50,31 @@ def dist_gpu(A, B, p):
      np.array
          p-dist between A and B
      """
+
+    # dividing the matrix to cells, different threads will work on different cells.
+    # this promising independence threads.
     d_A = cuda.to_device(A)
     d_B = cuda.to_device(B)
     d = np.array([0], dtype=np.float64)
     dist_kernel[num_blocks, threads_per_block](d_A, d_B, p, d)
-    out = a[0] ** (1 / p)
-    return d[0]
+
+    # take p-root of the accumulated diffs.
+    out = d[0] ** (1 / p)
+    return out
 
 
 @cuda.jit
 def dist_kernel(A, B, p, C):
+    # finding the cell
     tx = cuda.threadIdx.x
     ty = cuda.blockIdx.x
+
+    # computing
     d_cell = abs(A[tx, ty] - B[tx, ty]) ** p
+
+    # accumulating to C[0] all the squared diffs
     cuda.atomic.add(C, 0, d_cell)
-    
+
 
 # this is the comparison function - keep it as it is.
 def dist_comparison():
