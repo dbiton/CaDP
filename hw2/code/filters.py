@@ -18,8 +18,31 @@ def correlation_gpu(kernel, image):
     ------
     An numpy array of same shape as image
     '''
-    raise NotImplementedError("To be implemented")
+    d_kernel = cuda.to_device(kernel)
+    d_image = cuda.to_device(image)
+    A = np.zeros(image.shape)
+    num_threads = 1024
+    correlation_kernel[1, num_threads](d_kernel, d_image, A)
+    return A
 
+@cuda.jit
+def correlation_kernel(kernel, image, A):
+    tid = cuda.threadIdx.x
+    num_threads = cuda.blockDim.x
+    num_cells = A.shape[0] * A.shape[1]
+    
+    for cell_idx in range(tid, num_cells, num_threads):
+        x = cell_idx // A.shape[0]
+        y = cell_idx % A.shape[0]
+        cell = 0
+
+        for i in range(-kernel.shape[0]/2,kernel.shape[0]/2+1):
+            for j in range(-kernel.shape[1]/2,kernel.shape[1]/2+1):
+                image_i = x + i
+                image_j = y + j
+                if image_i>=0 and image_i<image.shape[0] and image_j>=0 and image_j<image.shape[1]:
+                    cell += kernel[i,j] * image[image_i, image_j]
+        A[x,y] = cell
 
 @njit
 def correlation_numba(kernel, image):
@@ -35,8 +58,18 @@ def correlation_numba(kernel, image):
     ------
     An numpy array of same shape as image
     '''
-    raise NotImplementedError("To be implemented")
-
+    A = np.zeros(image.shape)
+    for x in range(image.shape[0]):
+        for y in range(image.shape[1]):
+            cell = 0
+            for i in range(-kernel.shape[0]/2,kernel.shape[0]/2+1):
+                for j in range(-kernel.shape[1]/2,kernel.shape[1]/2+1):
+                    image_i = x + i
+                    image_j = y + j
+                    if image_i>=0 and image_i<image.shape[0] and image_j>=0 and image_j<image.shape[1]:
+                        cell += kernel[i,j] * image[image_i, image_j]
+            A[x,y] = cell
+    return A
 
 def sobel_operator():
     '''Load the image and perform the operator
@@ -47,9 +80,11 @@ def sobel_operator():
         '''
     pic = load_image()
     # your calculations
-
-    raise NotImplementedError("To be implemented")
-
+    filter = np.array( [1,0,-1], [2,0,-2], [1,0,-1])
+    G_x = correlation_numba(filter, pic)
+    G_y = correlation_numba(np.transpose(filter), pic)
+    sobel = np.sqrt(np.power(G_x,2) + np.power(G_y,2))
+    show_image(sobel)
 
 def load_image(): 
     fname = 'data/image.jpg'
