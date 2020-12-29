@@ -31,4 +31,17 @@ class IPNeuralNetwork(NeuralNetwork):
         '''
         raise NotImplementedError("To be implemented")
 
-    
+    def __init__(self):
+        self.write_lock = Lock()
+        self.pipe_read, self.pipe_write = Pipe()
+        
+    def put(self, msg):
+        self.write_lock.acquire()
+        try:
+            self.pipe_write.send(msg)
+        finally:
+            self.write_lock.release()
+
+    def get(self):
+        # blocks until input is given
+        return self.pipe_read.recv()
